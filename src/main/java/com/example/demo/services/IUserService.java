@@ -10,6 +10,6 @@ public interface IUserService {
     User getUser(String username);
     User createUser(User user);
     Role createRole(Role role);
+    Role getRole(String name);
     User addRoleToUser(String username, String name);
-    
 }

@@ -30,11 +30,11 @@ public class SecurityConfig {
         authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
         UsernamePasswordAuthentication usernamePasswordAuth = new UsernamePasswordAuthentication(authenticationManager);
-        usernamePasswordAuth.setFilterProcessesUrl("/jwtlogin");
-        return http.csrf().disable().sessionManagement()
+        usernamePasswordAuth.setFilterProcessesUrl("/login");
+        return http.cors().and().csrf().disable().sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and().authenticationManager(authenticationManager)
-            .authorizeRequests().antMatchers(HttpMethod.POST, "/jwtlogin").permitAll()
+            .authorizeRequests().antMatchers(HttpMethod.POST, "/login", "/register").permitAll()
             .and().authorizeRequests().antMatchers(HttpMethod.GET, "/users").hasAnyAuthority("ADMIN")
             .and().authorizeRequests().anyRequest().authenticated()
             .and().addFilter(usernamePasswordAuth)

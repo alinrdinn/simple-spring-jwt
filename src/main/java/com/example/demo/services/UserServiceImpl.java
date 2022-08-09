@@ -47,6 +47,11 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
     }
 
     @Override
+    public Role getRole(String name) {
+        return this.roleRepository.findByName(name);
+    }
+
+    @Override
     public Role createRole(Role role) {
         return this.roleRepository.save(role);
     }
