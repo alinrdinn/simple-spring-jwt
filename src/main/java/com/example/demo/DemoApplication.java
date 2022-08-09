@@ -25,13 +25,13 @@ public class DemoApplication {
 		return new BCryptPasswordEncoder();
 	}
 
-	@Bean
-	CommandLineRunner runner(UserServiceImpl userService) {
-		return args -> {
-			userService.createRole(new Role("ADMIN"));
-			userService.createUser(new User("ali", "1234567890", new ArrayList<Role>()));
-			userService.addRoleToUser("ali", "ADMIN");
-		};
-	}
+	// @Bean
+	// CommandLineRunner runner(UserServiceImpl userService) {
+	// 	return args -> {
+	// 		userService.createRole(new Role("ADMIN"));
+	// 		userService.createUser(new User("ali", "1234567890", new ArrayList<Role>()));
+	// 		userService.addRoleToUser("ali", "ADMIN");
+	// 	};
+	// }
 
 }

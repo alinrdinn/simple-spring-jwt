@@ -23,7 +23,7 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-
+    
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -52,19 +52,18 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
     }
 
     @Override
-    public void addRoleToUser(String username, String name) {
+    public User addRoleToUser(String username, String name) {
         User user = this.userRepository.findByUsername(username);
         Role role = this.roleRepository.findByName(name);
         user.getRoles().add(role);
+        return user;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        user.getRoles().forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority(role.getName()));
-        });
+        user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), authorities);
     }
     
