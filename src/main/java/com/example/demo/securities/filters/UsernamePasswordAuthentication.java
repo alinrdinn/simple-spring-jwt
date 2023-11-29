@@ -2,11 +2,13 @@ package com.example.demo.securities.filters;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
+import java.util.Set;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +37,7 @@ public class UsernamePasswordAuthentication extends UsernamePasswordAuthenticati
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException {   
+            throws AuthenticationException {
         String username = null;
         String password = null;
         StringBuffer stringBuffer = new StringBuffer();
@@ -46,7 +48,8 @@ public class UsernamePasswordAuthentication extends UsernamePasswordAuthenticati
             while ((line = bufferedReader.readLine()) != null) {
                 stringBuffer.append(line);
             }
-        } catch (Exception e) { /*report an error*/ }
+        } catch (Exception e) {
+            /* report an error */ }
         JsonNode jsonNode;
         try {
             jsonNode = objectMapper.readTree(stringBuffer.toString());
@@ -54,26 +57,56 @@ public class UsernamePasswordAuthentication extends UsernamePasswordAuthenticati
             password = jsonNode.get("password").asText();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-        } 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+        }
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,
+                password);
         return authenticationManager.authenticate(authenticationToken);
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
             Authentication authResult) throws IOException, ServletException {
-        User user = (User)authResult.getPrincipal();
+        User user = (User) authResult.getPrincipal();
+
+        Map<String, Set<String>> rolesPerRegion = new HashMap<>();
+        Map<String, Set<String>> subscriptionsPerRegion = new HashMap<>();
+
+        for (GrantedAuthority s : user.getAuthorities()) {
+            String[] parts = s.getAuthority().split("\\.");
+            String regionName = parts[0];
+            String subscriptionName = parts[1];
+            String roleName = parts[2];
+
+            rolesPerRegion.computeIfAbsent(regionName, k -> new HashSet<>()).add(roleName);
+            subscriptionsPerRegion.computeIfAbsent(regionName, k -> new HashSet<>()).add(subscriptionName);   
+        }
+
+        Map<String, List<String>> convertedRolesPerRegion = new HashMap<>();
+
+        for (Map.Entry<String, Set<String>> entry : rolesPerRegion.entrySet()) {
+            convertedRolesPerRegion.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
+
+        
+        Map<String, List<String>> convertedSubscriptionsPerRegion = new HashMap<>();
+
+        for (Map.Entry<String, Set<String>> entry : subscriptionsPerRegion.entrySet()) {
+            convertedSubscriptionsPerRegion.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
+        
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
         String accessToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 15 * 60 *1000))
+                .withExpiresAt(new Date(System.currentTimeMillis() + 15 * 60 * 1000))
                 .withIssuer(request.getRequestURL().toString())
-                .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+                .withClaim("roles", convertedRolesPerRegion)
+                .withClaim("subscriptions", convertedSubscriptionsPerRegion)
                 .sign(algorithm);
+        
         Map<String, String> tokens = new HashMap<>();
         tokens.put("accessToken", accessToken);
         response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getOutputStream(), tokens);
     }
-    
+
 }

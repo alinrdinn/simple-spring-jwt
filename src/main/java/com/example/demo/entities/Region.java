@@ -1,17 +1,20 @@
 package com.example.demo.entities;
 
-import java.util.List;
-
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+
+import java.util.List;
+
 @Entity
-@Table(name = "roles")
-public class Role {
+@Table(name = "regions")
+public class Region {
     @Id
     @GeneratedValue
     private Integer id;
@@ -19,11 +22,14 @@ public class Role {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "role")
+    @ManyToMany(fetch = FetchType.EAGER)
+    List<Subscription> subscriptions;
+
+    @OneToMany(mappedBy = "region")
     List<UserRoleRegion> userRoleRegions;
 
-    public Role(){}
-    public Role(String name) {
+    public Region() {}
+    public Region(String name) {
         this.name = name;
     }
 
@@ -33,17 +39,24 @@ public class Role {
     public String getName() {
         return name;
     }
+    public List<Subscription> getSubscriptions() {
+        return subscriptions;
+    }
     public List<UserRoleRegion> getUserRoleRegions() {
         return userRoleRegions;
     }
-    
+
     public void setId(Integer id) {
         this.id = id;
     }
     public void setName(String name) {
         this.name = name;
     }
+    public void setSubscriptions(List<Subscription> subscriptions) {
+        this.subscriptions = subscriptions;
+    }
     public void setUserRoleRegions(List<UserRoleRegion> userRoleRegions) {
         this.userRoleRegions = userRoleRegions;
     }
 }
+

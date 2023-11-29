@@ -1,12 +1,12 @@
 package com.example.demo.entities;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Table;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+
 import java.util.List;
 
 @Entity
@@ -18,17 +18,16 @@ public class User {
 
     @Column(name = "password")
     private String password;
+    
+    @OneToMany(mappedBy = "user")
+    List<UserRoleRegion> userRoleRegions;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    List<Role> roles;
+    public User(){}
 
-    public User(){
-
-    }
-    public User(String username, String password, List<Role> roles) {
+    public User(String username, String password, List<UserRoleRegion> userRoleRegions) {
         this.username = username;
         this.password = password;
-        this.roles = roles;
+        this.userRoleRegions = userRoleRegions;
     }
 
     public String getUsername() {
@@ -37,8 +36,8 @@ public class User {
     public String getPassword() {
         return password;
     }
-    public List<Role> getRoles() {
-        return roles;
+    public List<UserRoleRegion> getUserRoleRegions() {
+        return userRoleRegions;
     }
 
     public void setUsername(String username) {
@@ -47,7 +46,7 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
+    public void setUserRoleRegions(List<UserRoleRegion> userRoleRegions) {
+        this.userRoleRegions = userRoleRegions;
     }
 }
